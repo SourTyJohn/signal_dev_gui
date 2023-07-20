@@ -106,7 +106,7 @@ class SerialAPI:
             cls.flush()
 
             if not data:
-                data = [0, ] * len(cls.__saved_data[-1])
+                data = ["0", ] * len(cls.__saved_data[-1])
 
             cls.__saved_data.append( data )
             cls.__saved_data = cls.__saved_data[ -min(SAVED_DATA_LIMIT, len(cls.__saved_data)): ]

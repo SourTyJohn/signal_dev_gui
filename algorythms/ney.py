@@ -12,7 +12,7 @@ with open("data/gas_detection_model.txt", mode="r") as file:
     GASES = file.readline().split(".")
 
 
-def load(name, header_rows):
+def load(name, header_rows, skip_columns=None):
     global model
 
     data = np.genfromtxt(name, delimiter='\t', dtype=str, skip_header=header_rows)

@@ -11,7 +11,7 @@ pca = PCA(n_components=2)
 knn = KNeighborsClassifier(n_neighbors=2)
 
 
-def load(name, header_rows):
+def load(name, header_rows, skip_columns=None):
     data = pd.read_csv(name, delimiter='\t', header=None, skiprows=header_rows)
     target = data.iloc[:, 1]
     features = data.iloc[:, 2:]
