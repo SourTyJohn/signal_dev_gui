@@ -56,7 +56,14 @@ def load(file_name, header_rows, skip_columns=None):
 
     #  LOAD FILE
     with open(file_name, mode="r") as file:
-        raw_data = [line.strip().split() for line in file.readlines()[header_rows + 1:]]
+        COLUMNS_DATA_LINE = 5
+
+        lines = file.readlines()
+        raw_data = [line.strip().split() for line in lines[header_rows + 1:]]
+        skip_cols_file = lines[COLUMNS_DATA_LINE].strip()
+
+    # if skip_cols_file == str([x - 2 for x in skip_columns]):
+    #     skip_columns = []
 
     #  DELETE ROWS
     raw_data = np.array( raw_data,)

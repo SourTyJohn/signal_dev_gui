@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>751</width>
-    <height>812</height>
+    <width>757</width>
+    <height>815</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -78,8 +78,8 @@
    <widget class="QLabel" name="label_file_test">
     <property name="geometry">
      <rect>
-      <x>170</x>
-      <y>70</y>
+      <x>172</x>
+      <y>85</y>
       <width>391</width>
       <height>21</height>
      </rect>
@@ -97,8 +97,8 @@
    <widget class="QLabel" name="label_2">
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>70</y>
+      <x>22</x>
+      <y>85</y>
       <width>151</width>
       <height>21</height>
      </rect>
@@ -118,8 +118,8 @@
    <widget class="Line" name="line_2">
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>190</y>
+      <x>22</x>
+      <y>205</y>
       <width>711</width>
       <height>16</height>
      </rect>
@@ -131,8 +131,8 @@
    <widget class="QPushButton" name="b_file_test">
     <property name="geometry">
      <rect>
-      <x>580</x>
-      <y>60</y>
+      <x>582</x>
+      <y>75</y>
       <width>151</width>
       <height>31</height>
      </rect>
@@ -152,8 +152,8 @@
    <widget class="QTextEdit" name="log_view">
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>210</y>
+      <x>22</x>
+      <y>225</y>
       <width>711</width>
       <height>491</height>
      </rect>
@@ -177,7 +177,7 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>720</y>
+      <y>730</y>
       <width>351</width>
       <height>31</height>
      </rect>
@@ -198,7 +198,7 @@
     <property name="geometry">
      <rect>
       <x>380</x>
-      <y>720</y>
+      <y>730</y>
       <width>351</width>
       <height>31</height>
      </rect>
@@ -218,8 +218,8 @@
    <widget class="QPushButton" name="b_save">
     <property name="geometry">
      <rect>
-      <x>632</x>
-      <y>218</y>
+      <x>634</x>
+      <y>233</y>
       <width>91</width>
       <height>23</height>
      </rect>
@@ -238,8 +238,8 @@
    <widget class="QPushButton" name="b_file_algorithm">
     <property name="geometry">
      <rect>
-      <x>580</x>
-      <y>110</y>
+      <x>582</x>
+      <y>125</y>
       <width>151</width>
       <height>31</height>
      </rect>
@@ -259,8 +259,8 @@
    <widget class="QLabel" name="label_3">
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>120</y>
+      <x>22</x>
+      <y>135</y>
       <width>151</width>
       <height>21</height>
      </rect>
@@ -280,8 +280,8 @@
    <widget class="QLabel" name="label_file_algorythm">
     <property name="geometry">
      <rect>
-      <x>170</x>
-      <y>120</y>
+      <x>172</x>
+      <y>135</y>
       <width>391</width>
       <height>21</height>
      </rect>
@@ -299,8 +299,8 @@
    <widget class="Line" name="line_3">
     <property name="geometry">
      <rect>
-      <x>18</x>
-      <y>135</y>
+      <x>20</x>
+      <y>150</y>
       <width>711</width>
       <height>31</height>
      </rect>
@@ -312,8 +312,8 @@
    <widget class="QPushButton" name="b_load_in_lib">
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>160</y>
+      <x>22</x>
+      <y>175</y>
       <width>711</width>
       <height>31</height>
      </rect>
@@ -333,8 +333,8 @@
    <widget class="QPushButton" name="b_size_down">
     <property name="geometry">
      <rect>
-      <x>600</x>
-      <y>218</y>
+      <x>602</x>
+      <y>233</y>
       <width>23</width>
       <height>23</height>
      </rect>
@@ -357,8 +357,8 @@
    <widget class="QPushButton" name="b_size_up">
     <property name="geometry">
      <rect>
-      <x>570</x>
-      <y>218</y>
+      <x>572</x>
+      <y>233</y>
       <width>23</width>
       <height>23</height>
      </rect>
@@ -378,13 +378,47 @@
      <string>+</string>
     </property>
    </widget>
+   <widget class="QRadioButton" name="rb_del_columns">
+    <property name="geometry">
+     <rect>
+      <x>50</x>
+      <y>40</y>
+      <width>321</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>MS Sans Serif</family>
+      <pointsize>10</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>исключить выключенные датчики</string>
+    </property>
+   </widget>
+   <widget class="Line" name="line_4">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>60</y>
+      <width>711</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Horizontal</enum>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>751</width>
+     <width>757</width>
      <height>26</height>
     </rect>
    </property>

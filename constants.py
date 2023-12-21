@@ -20,8 +20,8 @@ PORT_READ_DELAY = 200  # ms
 WRITE_TO_FILE_DELAY = PORT_READ_DELAY  # ms
 
 # versions info
-PROGRAM_VER = "01.00"
-DEVICE_VER = "01.00"
+PROGRAM_VER = "00.05 MQ"
+DEVICE_VER = "MQ-Proto"
 
 # files
 FILE_DEFAULTS = "*.txt"
@@ -31,8 +31,9 @@ FILE_FORMAT = """[HEADER]
     version_sensor: {1}
     date: {2}
     time: {3}
+    use_sensors: {4}
 [DATA]
-{4}""".format(PROGRAM_VER, DEVICE_VER, "{0}", "{1}", "{2}")
+{5}""".format(PROGRAM_VER, DEVICE_VER, "{0}", "{1}", "{2}", "{3}")
 HEADER_ROWS = FILE_FORMAT.count("\n")
 SKIP_COLUMNS = 2
 

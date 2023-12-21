@@ -341,6 +341,7 @@ class FileWindow(QW.QMainWindow):
             FILE_FORMAT.format(
                 date.strftime("%d:%m:%Y"),
                 date.strftime("%H/%M/%S"),
+                SerialAPI.getUsePortsState(),
                 data
             )
         )
@@ -408,6 +409,7 @@ class AnalyzeWindow(QW.QMainWindow):
     label_file_algorythm: QW.QLabel
 
     log_view: QW.QTextEdit
+    rb_del_columns: QW.QRadioButton
 
     def __init__(self, parent: QW.QMainWindow):
         super().__init__(parent)
@@ -488,6 +490,8 @@ class AnalyzeWindow(QW.QMainWindow):
             return
 
         skip_rows = [i + INFO_COLUMNS for i, state in enumerate( SerialAPI.getUsePortsState() ) if not state]
+        if not self.rb_del_columns.isChecked():
+            skip_rows = []
         self.lib.load( file_path, HEADER_ROWS, skip_rows)
         MessageWindow(self, "Обучение завершено")
 
@@ -560,6 +564,13 @@ class AnalyzeWindow(QW.QMainWindow):
         state = SerialAPI.sensorsState()
         if self.lib:
             res = self.lib.analyze(data)
+            match res:
+                case "Air":
+                    res = "Воздух"
+                case "Perfume":
+                    res = "Духи"
+                case "Flux":
+                    res = "Флюс"
         else:
             res = "Нет алгоритма"
 
