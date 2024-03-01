@@ -160,7 +160,7 @@
     </property>
     <property name="font">
      <font>
-      <pointsize>10</pointsize>
+      <pointsize>22</pointsize>
      </font>
     </property>
     <property name="horizontalScrollBarPolicy">
