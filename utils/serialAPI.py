@@ -20,11 +20,11 @@ __all__ = (
 class SerialPort:
     def __init__(self, port_name):
         try:
-            self.__port = serial.Serial(port_name, )
+            self.__port = serial.Serial(port_name, timeout=0.2)
 
             # ---------------------------------------------------
-            self.__port.readline().decode("ascii", errors="ignore")
-            self.__port.flush()
+            while not self.__port.readline().decode("ascii", errors="ignore"):
+                self.__port.flush()
             # ---------------------------------------------------
 
             self.__blocked = False
@@ -67,7 +67,7 @@ class SerialPort:
             data = [data_i for i, data_i in enumerate(data) if use_sensors[i]]
         # ----------------------------------------------------------------------
 
-        self.flush()
+        # self.flush()
         return data
 
     def disconnect(self):
@@ -117,20 +117,17 @@ class __SerialAPI:
         self.__use_sensors = []
         self.__use_sensors_names = []
 
-        self.thread_callable = None
-
     # -------- THREAD ---------------------------------
-    def __thread_call(self):
+    def __update_data(self):
         if self.blocked: return
-        self.thread_callable(self.readLine(), self.data.getSaved())
+        self.readLine()
 
     def __run_thread(self):
-        self.thread = SerialAPIThread(self.__thread_call)
-        # self.thread.connect()
+        self.thread = SerialAPIThread(self.__update_data)
         self.thread.start()
     # -------------------------------------------------
 
-    def connect(self, port_name, function):
+    def connect(self, port_name, ):
         if self.port:
             self.port.disconnect()
         self.port = SerialPort(port_name)
@@ -141,7 +138,6 @@ class __SerialAPI:
         self.setUsePortsState([1, ] * len(self.port.readLine()))
         # ------------------- ------------------------
 
-        self.thread_callable = function
         self.__run_thread()
 
         return self.port.blocked
@@ -176,6 +172,9 @@ class __SerialAPI:
 
     def getNamings(self):
         return self.__use_sensors_names
+
+    def getData(self):
+        return self.data.getLast(), self.data.getSaved()
 
 
 def serial_ports():

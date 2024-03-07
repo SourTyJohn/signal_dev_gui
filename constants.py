@@ -6,7 +6,7 @@ POINTS_AT_ONCE = 100
 
 # data
 SAVED_DATA_LIMIT = 200  # SAVED_DATA_LIMIT >= POINTS_AT_ONCE
-DATA_DIVIDER = '  '
+DATA_DIVIDER = ' '
 
 # analyze
 MAX_DEVIATION_REST = 0.0150
@@ -18,12 +18,14 @@ RESTRAIN_K = 0.05
 
 # serial com-port
 READ_SPEED = 9600  # char / sec
+
 PORT_READ_DELAY = 200  # ms
-WRITE_TO_FILE_DELAY = PORT_READ_DELAY  # ms
+WRITE_TO_FILE_DELAY = 200  # ms
+UI_UPDATE_DELAY = 200  # ms
 
 # versions info
-PROGRAM_VER = "00.05 MQ"
-DEVICE_VER = "MQ-Proto"
+PROGRAM_VER = "1.1_Vector"
+DEVICE_VER = "TGS_UnoWiFi_Proto"
 
 # files
 FILE_DEFAULTS = "*.txt"

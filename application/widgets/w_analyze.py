@@ -2,6 +2,7 @@ import PyQt5.QtWidgets as QW
 import PyQt5.uic as uic
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import pyqtSlot
+from data.SelectionSave import selection
 
 from easygui import fileopenbox, filesavebox
 
@@ -32,6 +33,8 @@ class AnalyzeWindow(QW.QMainWindow):
     b_size_down: QW.QPushButton
     b_size_up: QW.QPushButton
 
+    b_save_selection: QW.QPushButton
+
     label_file_learn: QW.QLabel
     label_file_test: QW.QLabel
     label_file_algorythm: QW.QLabel
@@ -48,7 +51,7 @@ class AnalyzeWindow(QW.QMainWindow):
 
         self.b_file_test.clicked.connect(lambda: self.load_file(self.label_file_test))
         self.b_file_learn.clicked.connect(lambda: self.load_file(self.label_file_learn))
-        self.b_file_algorithm.clicked.connect(self.load_script)
+        self.b_file_algorithm.clicked.connect(self.select_script)
 
         self.b_load_in_lib.clicked.connect(self.loadLearnToLib)
         self.b_start_test_file.clicked.connect(self.testWithFile)
@@ -60,6 +63,13 @@ class AnalyzeWindow(QW.QMainWindow):
 
         self.lib = None
         self.do_analyze = False
+
+        self.label_file_learn.setText(selection.get('analyze_window', 'file_learn', ''))
+        self.label_file_test.setText(selection.get('analyze_window', 'file_test', ''))
+        self.label_file_algorythm.setText(selection.get('analyze_window', 'algorythm', ''))
+        if self.label_file_algorythm.text() != '':
+            self.load_script()
+        self.b_save_selection.clicked.connect(self.saveSelection)
 
     @staticmethod
     def load_file(widget: QW.QLabel):
@@ -78,7 +88,7 @@ class AnalyzeWindow(QW.QMainWindow):
 
         widget.setText(file_path)
 
-    def load_script(self):
+    def select_script(self):
         file_path = fileopenbox("Выберите файл алгоритма", filetypes=SCRIPT_DEFAULTS, default=SCRIPT_DEFAULTS)
 
         if not file_path:
@@ -91,13 +101,17 @@ class AnalyzeWindow(QW.QMainWindow):
             self.label_file_algorythm.setText("нет файла")
             return
 
-        self.lib, code = load_script(file_path)
+        self.load_script()
+
+        self.label_file_algorythm.setText(file_path)
+        self.load_script()
+
+    def load_script(self):
+        self.lib, code = load_script(self.label_file_algorythm.text())
         if code != 0:
             MessageWindow(self, f"ERROR: {code}")
             self.label_file_algorythm.setText("нет файла")
             return
-
-        self.label_file_algorythm.setText(file_path)
 
     @classmethod
     def show_window(cls, parent):
@@ -194,6 +208,8 @@ class AnalyzeWindow(QW.QMainWindow):
         if self.lib:
             res = self.lib.analyze(data)
             match res:
+                case None:
+                    res = 'Неопознанный Газ'
                 case "Gvozd":
                     res = "Гвоздика"
                 case "Air":
@@ -215,24 +231,8 @@ class AnalyzeWindow(QW.QMainWindow):
         # else:
         #     self.log_view.setText( "ОТДЫХ" )
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    def saveSelection(self):
+        selection.update('analyze_window', 'file_learn', self.label_file_learn.text())
+        selection.update('analyze_window', 'file_test', self.label_file_test.text())
+        selection.update('analyze_window', 'algorythm', self.label_file_algorythm.text())
+        selection.save()

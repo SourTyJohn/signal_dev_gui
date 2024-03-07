@@ -1,4 +1,5 @@
 import numpy as np
+from typing import Union
 
 means_data = []
 deviations = []
@@ -26,7 +27,9 @@ def standard_deviation(full_vec: np.ndarray, mean: np.ndarray) -> np.ndarray:
     return (arr.sum(axis=0) / arr.shape[0]) ** 0.5
 
 
-def probabilities(signals: np.ndarray, _means_data: np.ndarray, _deviations: np.ndarray) -> np.ndarray:
+def probabilities(
+        signals: np.ndarray, _means_data: Union[np.ndarray, list], _deviations: Union[np.ndarray, list]
+) -> np.ndarray:
     A = []
 
     for B in range(len(_means_data)):
