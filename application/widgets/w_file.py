@@ -8,7 +8,7 @@ from datetime import datetime
 
 from constants import *
 from utils.paths import Path
-from utils.serialAPI import serial_api
+from utils.serialAPI import serial_api, SerialDataReceiver
 from utils.widgets import MessageWindow
 from utils.other import get_center
 
@@ -18,7 +18,7 @@ __all__ = (
 )
 
 
-class FileWindow(QW.QMainWindow):
+class FileWindow(SerialDataReceiver, QW.QMainWindow):
     __instance = None
 
     b_file_open:    QW.QPushButton
@@ -168,7 +168,7 @@ class FileWindow(QW.QMainWindow):
         )
 
     @pyqtSlot()
-    def getSerialData(self, data):
+    def getSerialData(self, data: list, saved_data: list):
         if self.write_state is False:
             return
 

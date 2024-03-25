@@ -1,19 +1,16 @@
 from PyQt5.QtCore import QThread
-from PyQt5.QtCore import pyqtSlot, pyqtSignal
-from PyQt5.QtWidgets import QWidget
+from PyQt5.QtCore import pyqtSlot
 
-import numpy as np
 import sys
 import serial
 
-from constants import READ_SPEED, DATA_DIVIDER, DEVIATION_POINTS, RECENT_DEVIATION_POINTS, \
-    MAX_DEVIATION_REST, MAX_DEVIATION_RISING, DO_NORMALIZE, SAVED_DATA_LIMIT, PORT_READ_DELAY
-from utils.other import restrain, normalize
+from constants import DATA_DIVIDER, SAVED_DATA_LIMIT, PORT_READ_DELAY
 
 
 __all__ = (
     "serial_ports",
     "serial_api",
+    "SerialDataReceiver"
 )
 
 
@@ -54,10 +51,14 @@ class SerialPort:
             return
 
         # ------- READ ---------------------------------------------------------
+        raw_data = None
         try:
             raw_data = self.__port.readline().decode("ascii", errors="ignore")
             data = raw_data.rstrip().split(DATA_DIVIDER)[1:]
-        except serial.SerialException:
+            self.flush()
+        except serial.SerialException as ex:
+            print(f'ERROR WHILE READING. Err: {ex}')
+            print(f'DATA: {raw_data}')
             self.blocked = True
             return None
         # ----------------------------------------------------------------------
@@ -175,6 +176,24 @@ class __SerialAPI:
 
     def getData(self):
         return self.data.getLast(), self.data.getSaved()
+
+
+class SerialDataReceiver(object):
+    __receivers = []
+
+    def __new__(cls, *args, **kwargs):
+        obj = super(cls.__bases__[1], cls).__new__(cls)
+        SerialDataReceiver.__receivers.append(obj)
+        return obj
+
+    def getSerialData(self, data: list, saved_data: list):
+        pass
+
+    @classmethod
+    def sendSerialData(cls, data: list, saved_data: list):
+        for obj in cls.__receivers:
+            if not hasattr(obj, "isVisible") or obj.isVisible():
+                obj.getSerialData(data, saved_data)
 
 
 def serial_ports():

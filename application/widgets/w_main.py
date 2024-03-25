@@ -9,7 +9,7 @@ from PyQt5.QtCore import pyqtSlot, QTimer, QObject
 from PyQt5.QtGui import QIcon, QPixmap
 
 from utils.paths import Path
-from utils.serialAPI import serial_api, serial_ports
+from utils.serialAPI import serial_api, serial_ports, SerialDataReceiver
 from utils.other import get_center
 from utils.widgets import MessageWindow
 from constants import UI_UPDATE_DELAY
@@ -113,14 +113,7 @@ class MainWindow(QW.QMainWindow):
             serial_api.blocked = True
             return
 
-        if self.file_window and self.file_window.isVisible():
-            self.file_window.getSerialData(data)
-
-        if self.graph_window and self.graph_window.isVisible():
-            self.graph_window.getSerialData(saved_data)
-
-        if self.algo_window and self.algo_window.isVisible():
-            self.algo_window.getSerialData(data)
+        SerialDataReceiver.sendSerialData(data, saved_data)
 
 
 class SerialConnector(QObject):

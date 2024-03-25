@@ -8,7 +8,7 @@ from easygui import fileopenbox, filesavebox
 
 from constants import *
 from utils.paths import Path
-from utils.serialAPI import serial_api
+from utils.serialAPI import serial_api, SerialDataReceiver
 from utils.other import load_script
 from utils.widgets import MessageWindow
 
@@ -18,7 +18,7 @@ __all__ = (
 )
 
 
-class AnalyzeWindow(QW.QMainWindow):
+class AnalyzeWindow(SerialDataReceiver, QW.QMainWindow):
     __instance = None
 
     b_file_learn: QW.QPushButton
@@ -158,9 +158,12 @@ class AnalyzeWindow(QW.QMainWindow):
             for i, line in enumerate(data):
                 res = self.lib.analyze(line.strip().split(DATA_DIVIDER)[SKIP_COLUMNS:])
                 true = line.split("\t")[1]
-                p = "ВЕРНО" if res == true else "ПРОМАХ"
+                if res[0][0] == true and len(res) == 1:
+                    counter_good += 1
+                    p = "TRUE"
+                else:
+                    p = 'FALSE'
                 counter += 1
-                counter_good += res == true
 
                 self.log_view.append(
                     f"{i}\tрез: {res}\tист: {true}\t{p}"
@@ -200,29 +203,19 @@ class AnalyzeWindow(QW.QMainWindow):
             self.b_analyze_port.setStyleSheet("background-color: white")
 
     @pyqtSlot()
-    def getSerialData(self, data):
+    def getSerialData(self, data: list, saved_data: list):
         if not self.do_analyze:
             return
 
         # state = serial_api.sensorsState()
         if self.lib:
             res = self.lib.analyze(data)
-            match res:
-                case None:
-                    res = 'Неопознанный Газ'
-                case "Gvozd":
-                    res = "Гвоздика"
-                case "Air":
-                    res = "Воздух"
-                case "Orange":
-                    res = "Апельсин"
         else:
             res = "Нет алгоритма"
 
         # self.log_view.clear()
         # self.log_view.append(f"Газ: {res}")
         self.log_view.setText(f"Газ: {res}")
-        print(f"Газ: {res}")
 
         # if state == 0:
         #     self.log_view.setText( f"{res} {data}" )
