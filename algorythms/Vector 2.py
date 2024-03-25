@@ -118,9 +118,7 @@ def load(file_name, header_rows, skip_columns=None, raw_data=None):
                 norm_means
             ])
 
-    # for x in sensors_data:
-    #     print(x[0], x[1], x[2], sep='\n')
-    #     print()
+    printData()
 
 
 def contains(_list: list, sub_list: list) -> bool:
@@ -163,6 +161,22 @@ def analyze(test_features):
                 gases.append( [names[i], min_k] )
 
     return gases if gases else DEFAULT_RETURN[:]
+
+
+def printData():
+    print(sensors_data)
+    for x in range(len(sensors_data)):
+        print(x, names[x])
+        print('SENSORS_DATA: ')
+        for line in range(len(sensors_data[x][0])):
+            print(line, end='\t')
+            print(int( sensors_data[x][0][line] ), end='\t')
+            print(int( sensors_data[x][1][line] ), end='\t')
+            t = str( sensors_data[x][2][line] )
+            print(t[:min(len(t), 4)])
+        print('MEANS_DATA')
+        print(means_data[x])
+        print('--------------------')
 
 
 if __name__ == '__main__':
