@@ -16,6 +16,8 @@ RECENT_DEVIATION_POINTS = 5
 DO_NORMALIZE = True
 RESTRAIN_K = 0.05
 
+DO_DEBUG_RETURN = True
+
 # serial com-port
 READ_SPEED = 9600  # char / sec
 
@@ -40,6 +42,10 @@ FILE_FORMAT = """[HEADER]
 {5}""".format(PROGRAM_VER, DEVICE_VER, "{0}", "{1}", "{2}", "{3}")
 HEADER_ROWS = FILE_FORMAT.count("\n")
 SKIP_COLUMNS = 2
+
+LINE_FORMAT_GOOD = '<span style="color:green">{0}</span>'
+LINE_FORMAT_BAD = '<span style="color:red">{0}</span>'
+LINE_FORMAT_MID = '<span style="color:yellow">{0}</span>'
 
 
 FONT_SMALL_DEF = QFont("MS Sans Serif", 10, 1)

@@ -68,6 +68,11 @@ class FileWindow(SerialDataReceiver, QW.QMainWindow):
         self.timer_checked_true = self.rb_use_timer.isChecked()
         self.timer_k = 0
 
+        self.main_widget = QW.QWidget(self)
+        self.main_widget.setLayout(self.layout_main)
+        self.layout_main.setParent(self.main_widget)
+        self.setCentralWidget(self.main_widget)
+
     @classmethod
     def show_window(cls, parent):
         if cls.__instance is None:

@@ -71,6 +71,11 @@ class AnalyzeWindow(SerialDataReceiver, QW.QMainWindow):
             self.load_script()
         self.b_save_selection.clicked.connect(self.saveSelection)
 
+        self.main_widget = QW.QWidget(self)
+        self.main_widget.setLayout(self.layout_main)
+        self.layout_main.setParent(self.main_widget)
+        self.setCentralWidget(self.main_widget)
+
     @staticmethod
     def load_file(widget: QW.QLabel):
         default = widget.text() if widget.text() else FILE_DEFAULTS
@@ -156,18 +161,26 @@ class AnalyzeWindow(SerialDataReceiver, QW.QMainWindow):
             counter, counter_good = 0, 0
 
             for i, line in enumerate(data):
-                res = self.lib.analyze(line.strip().split(DATA_DIVIDER)[SKIP_COLUMNS:])
+                res, *debug_return = self.lib.analyze(line.strip().split(DATA_DIVIDER)[SKIP_COLUMNS:])
                 true = line.split("\t")[1]
-                if res[0][0] == true and len(res) == 1:
-                    counter_good += 1
-                    p = "TRUE"
+                if (res[0][0] in true) or (true in res[0][0]):
+                    if len(res) == 1:
+                        counter_good += 1
+                        p = "TRUE"
+                    else:
+                        counter_good += 0.5
+                        p = 'MID'
                 else:
                     p = 'FALSE'
                 counter += 1
 
-                self.log_view.append(
-                    f"{i}\tрез: {res}\tист: {true}\t{p}"
-                )
+                line = f"{i}\tрез: {res}\tист: {true}\t{p}\t" + (str(debug_return) if DO_DEBUG_RETURN else '')
+                match p:
+                    case 'TRUE':
+                        line = LINE_FORMAT_GOOD.format(line)
+                    case 'FALSE':
+                        line = LINE_FORMAT_BAD.format(line)
+                self.log_view.append(line)
 
             percentage = counter_good / counter * 100 // 1
             self.log_view.append(
@@ -229,3 +242,14 @@ class AnalyzeWindow(SerialDataReceiver, QW.QMainWindow):
         selection.update('analyze_window', 'file_test', self.label_file_test.text())
         selection.update('analyze_window', 'algorythm', self.label_file_algorythm.text())
         selection.save()
+
+
+class GasSelectionWindow(QW.QMainWindow):
+
+    def __init__(self, parent, file_path: str):
+        super().__init__(parent)
+        self.gases = {}
+        with open(file_path, mode='r', encoding='utf-8') as file:
+            line = file.readline()
+            # while line !=
+            # if not

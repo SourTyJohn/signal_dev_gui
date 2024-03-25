@@ -9,11 +9,11 @@ means_data = []
 
 DEF_TYPE = np.float32
 NAME = "Метод Расстояний"
-FILTER_PERCENT = 0.05
+FILTER_PERCENT = 0.06
 FILTER_AMOUNT = 10
-FILTER_FINAL_K = 0.01
+FILTER_FINAL_K = 0.05
 
-DEFAULT_RETURN = [ ['Air', 1.0],  ]
+DEFAULT_RETURN = [[['Air', 1.0],  ], 'NO_INFO']
 
 LIMIT_K = 1
 MAX_K_PER_ANALYZE = 1.0
@@ -35,10 +35,24 @@ def toInt(s: str) -> int:
 
 
 def normalize(vec: np.ndarray) -> np.ndarray:
-    len_ = (vec ** 2).sum() ** 0.5
+    # len_ = (vec ** 2).sum() ** 0.5
+    len_ = vec.sum()
     if len_ == 0:
         return vec
     return vec / len_
+
+
+def normalize_active(vec: np.ndarray, mask: list) -> np.ndarray:
+    new_vec = vec.copy()
+    lenn = 0
+    for x in range(len(mask)):
+        if mask[x] == 1:
+            lenn += new_vec[x]
+        else:
+            new_vec[x] = 0
+    if lenn == 0:
+        return new_vec
+    return new_vec / lenn
 
 
 def get_active_sensors(norm_means):
@@ -53,7 +67,7 @@ def get_active_sensors(norm_means):
     return new_means_i
 
 
-def load(file_name, header_rows, skip_columns=None, raw_data=None):
+def load(file_name, header_rows, skip_columns=None, raw_data=None, use_gases=None):
     global means_data
     global air_means
     global sensors_data
@@ -115,7 +129,7 @@ def load(file_name, header_rows, skip_columns=None, raw_data=None):
         sensors_data.append([
                 new_means_i,
                 np.array(means_data[x], dtype=DEF_TYPE),
-                norm_means
+                normalize_active(means_data[x], new_means_i)
             ])
 
     printData()
@@ -128,26 +142,46 @@ def contains(_list: list, sub_list: list) -> bool:
     return True
 
 
+def mask_compare(m1: list, m2: list) -> int:
+    s = 0
+    for x in range(len(m1)):
+        if m1[x] != m2[x]:
+            s += 1
+    return s
+
+
+def apply_mask(vec: np.ndarray, mask: list) -> np.ndarray:
+    res_vec = vec.copy()
+    for x in range(len(mask)):
+        if mask[x] == 0:
+            res_vec[x] = 0
+    return res_vec
+
+
 def analyze(test_features):
+    # CLEAR DATA. MEANS
     test_features = np.array(test_features, dtype=DEF_TYPE)
     test_features -= air_means
+    # ACTIVE SENSORS
     normalized = normalize(test_features)
     test_sensors = get_active_sensors(normalized)
+
     test_feedback = np.array(test_features, dtype=DEF_TYPE)
     if all(x == 0 for x in test_sensors):
         return DEFAULT_RETURN[:]
 
-    distances = [ [x, distance(item[2], test_feedback)] for x, item in enumerate(sensors_data) ]
+    # SORT MODELS
+    # distances = [ [x, distance(item[2], test_feedback)] for x, item in enumerate(sensors_data) ]
+    distances = [[x, mask_compare(test_sensors, item[0])] for x, item in enumerate(sensors_data)]
     distances.sort(key=lambda x: x[1])
+
+    # ANALYZE
     curr_lim_k = MAX_K_PER_ANALYZE
     gases = []
     for [i, _] in distances:
         sensors, model_feedbacks, _ = sensors_data[i]
 
-        if contains(test_sensors, sensors):  # совпадение сенсоров с образом
-            # if all([test_feedback[i] > 0 for i in range(len(test_feedback)) if i in test_sensors]):
-            #     pass  # если у сенсоров остались свободные сигналы
-
+        if contains(test_sensors, sensors):  # нашли вхождение образа в показания
             # соотношения показаний с показаниями в модели
             sensor_ks = [test_feedback[i] / model_feedbacks[i] for i in range(len(test_feedback)) if sensors[i] != 0]
             if LIMIT_K: sensor_ks += [LIMIT_K, ]
@@ -160,7 +194,7 @@ def analyze(test_features):
                 test_feedback -= [model_feedbacks[x] * min_k if sensors[x] else 0 for x in range(len(test_feedback))]
                 gases.append( [names[i], min_k] )
 
-    return gases if gases else DEFAULT_RETURN[:]
+    return [gases, test_sensors, distances] if gases else DEFAULT_RETURN[:]
 
 
 def printData():
