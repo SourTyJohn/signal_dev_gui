@@ -9,6 +9,7 @@ from constants import POINTS_AT_ONCE
 from utils.serialAPI import serial_api, SerialDataReceiver
 from utils.widgets import GraphCanvas, MessageWindow
 from utils.other import get_center
+from utils.paths import Path
 
 
 __all__ = (
@@ -26,7 +27,7 @@ class GraphWindow(SerialDataReceiver, QW.QMainWindow):
         super().__init__(parent)
         self.setGeometry(QRect(700, 100, 800, 800))
         self.setWindowTitle("Анализатор Газов: График")
-        self.setWindowIcon(QIcon("../templates/icon.ico"))
+        self.setWindowIcon(QIcon(Path.to_images('icon.ico')))
         self.move( *get_center() )
 
         self.counter = 0

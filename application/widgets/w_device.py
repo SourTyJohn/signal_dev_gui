@@ -21,7 +21,7 @@ class DeviceWindow(QW.QMainWindow):
         super().__init__(parent)
         uic.loadUi(Path.to_template("device.ui"), self)
         self.setWindowTitle("Анализатор Газов: Устройство")
-        self.setWindowIcon(QIcon("../templates/icon.ico"))
+        self.setWindowIcon(QIcon(Path.to_images('icon.ico')))
 
         self.b_refresh.clicked.connect( self.refresh )
         self.states_checkers = []

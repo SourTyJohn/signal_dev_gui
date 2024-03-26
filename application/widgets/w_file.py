@@ -41,7 +41,7 @@ class FileWindow(SerialDataReceiver, QW.QMainWindow):
         super().__init__(parent)
         uic.loadUi(Path.to_template("file.ui"), self)
         self.setWindowTitle("Анализатор Газов: Файл")
-        self.setWindowIcon(QIcon("../templates/icon.ico"))
+        self.setWindowIcon(QIcon(Path.to_images('icon.ico')))
         self.clear_file_view()
         self.move( *get_center() )
 

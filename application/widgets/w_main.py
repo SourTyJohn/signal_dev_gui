@@ -53,7 +53,7 @@ class MainWindow(QW.QMainWindow):
         self.algo_window = None
         self.device_window = None
 
-        file = open(Path.to_template("signal_logo.png"), mode="rb").read()
+        file = open(Path.to_images("signal_logo.png"), mode="rb").read()
         pixmap = QPixmap(  )
         pixmap.loadFromData(file)
         self.image_label.setPixmap(pixmap)

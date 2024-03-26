@@ -46,7 +46,7 @@ class AnalyzeWindow(SerialDataReceiver, QW.QMainWindow):
         super().__init__(parent)
         uic.loadUi(Path.to_template("testing.ui"), self)
         self.setWindowTitle("Анализатор Газов: Алгоритм и Анализ")
-        self.setWindowIcon(QIcon("../templates/icon.ico"))
+        self.setWindowIcon(QIcon(Path.to_images('icon.ico')))
         self.move(QW.QDesktopWidget().availableGeometry().center())
 
         self.b_file_test.clicked.connect(lambda: self.load_file(self.label_file_test))

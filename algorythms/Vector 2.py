@@ -67,6 +67,31 @@ def get_active_sensors(norm_means):
     return new_means_i
 
 
+
+
+def contains(_list: list, sub_list: list) -> bool:
+    for i in range( len(sub_list) ):
+        if sub_list[i] == 1 and _list[i] == 0:
+            return False
+    return True
+
+
+def mask_compare(m1: list, m2: list) -> int:
+    s = 0
+    for x in range(len(m1)):
+        if m1[x] != m2[x]:
+            s += 1
+    return s
+
+
+def apply_mask(vec: np.ndarray, mask: list) -> np.ndarray:
+    res_vec = vec.copy()
+    for x in range(len(mask)):
+        if mask[x] == 0:
+            res_vec[x] = 0
+    return res_vec
+
+
 def load(file_name, header_rows, skip_columns=None, raw_data=None, use_gases=None):
     global means_data
     global air_means
@@ -133,29 +158,6 @@ def load(file_name, header_rows, skip_columns=None, raw_data=None, use_gases=Non
             ])
 
     printData()
-
-
-def contains(_list: list, sub_list: list) -> bool:
-    for i in range( len(sub_list) ):
-        if sub_list[i] == 1 and _list[i] == 0:
-            return False
-    return True
-
-
-def mask_compare(m1: list, m2: list) -> int:
-    s = 0
-    for x in range(len(m1)):
-        if m1[x] != m2[x]:
-            s += 1
-    return s
-
-
-def apply_mask(vec: np.ndarray, mask: list) -> np.ndarray:
-    res_vec = vec.copy()
-    for x in range(len(mask)):
-        if mask[x] == 0:
-            res_vec[x] = 0
-    return res_vec
 
 
 def analyze(test_features):
