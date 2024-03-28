@@ -17,8 +17,8 @@ def get_means(vec_like: list) -> np.ndarray:  # считает средние з
     return means
 
 
-def distance(a: np.ndarray, b: np.ndarray, r: float = 1,
-             p: float = 4) -> float:  # расстояние между n-мерными точками. Евклидово
+def distance(a: np.ndarray, b: np.ndarray, r: float = 0.5,
+             p: float = 2) -> float:  # расстояние между n-мерными точками. Евклидово
     return sum((a - b) ** p) ** r
 
 
@@ -34,11 +34,11 @@ def probabilities(
 
     for B in range(len(_means_data)):
         A.append(
-            min(
-                distance(signals, _means_data[B] - _deviations[B]),
-                distance(signals, _means_data[B] + _deviations[B]),
+            # min(
+                # distance(signals, _means_data[B] - _deviations[B]),
+                # distance(signals, _means_data[B] + _deviations[B]),
                 distance(signals, _means_data[B])
-            )
+            # )
         )
 
     return np.array(A, dtype=DEF_TYPE)
@@ -96,4 +96,8 @@ def load(file_name, header_rows, skip_columns=None):
 def analyze(test_features):
     test_features = np.array(test_features, dtype=DEF_TYPE)
     prob = probabilities(test_features, means_data, deviations)
-    return names[ list(prob).index(prob.min()) ]
+    return [[names[list(prob).index(prob.min())], 1.0], ], prob
+
+
+def getModelsData():
+    return [[int(mean) for mean in data] for data in means_data], names

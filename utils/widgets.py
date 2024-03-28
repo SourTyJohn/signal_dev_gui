@@ -4,7 +4,7 @@ from PyQt5.QtGui import QFont
 import matplotlib
 matplotlib.use('Qt5Agg')
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
-from matplotlib.figure import Figure
+from matplotlib.figure import Figure, Axes
 
 
 __all__ = (
@@ -30,7 +30,7 @@ class GraphCanvas(FigureCanvasQTAgg):
 
     def __init__(self, width=5, height=4, dpi=100):
         fig = Figure(figsize=(width, height), dpi=dpi)
-        self.axes = fig.add_subplot(111)
+        self.axes: Axes = fig.add_subplot(111)
         super(GraphCanvas, self).__init__(fig)
 
 

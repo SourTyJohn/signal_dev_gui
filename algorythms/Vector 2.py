@@ -59,14 +59,12 @@ def get_active_sensors(norm_means):
     new_means_i = []
 
     for i, mean in enumerate(norm_means):
-        if mean > FILTER_PERCENT:
+        if abs(mean) > FILTER_PERCENT:
             new_means_i.append(1)  # i
         else:  # delete
             new_means_i.append(0)
 
     return new_means_i
-
-
 
 
 def contains(_list: list, sub_list: list) -> bool:
@@ -154,7 +152,7 @@ def load(file_name, header_rows, skip_columns=None, raw_data=None, use_gases=Non
         sensors_data.append([
                 new_means_i,
                 np.array(means_data[x], dtype=DEF_TYPE),
-                normalize_active(means_data[x], new_means_i)
+                apply_mask(means_data[x], new_means_i)
             ])
 
     printData()
@@ -197,6 +195,11 @@ def analyze(test_features):
                 gases.append( [names[i], min_k] )
 
     return [gases, test_sensors, distances] if gases else DEFAULT_RETURN[:]
+
+
+def getModelsData():
+    return [[int(mean) for mean in data[2]] for data in sensors_data], names
+    # return [[int(mean) for mean in means] for means in means_data], names
 
 
 def printData():

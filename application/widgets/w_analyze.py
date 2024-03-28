@@ -10,7 +10,9 @@ from constants import *
 from utils.paths import Path
 from utils.serialAPI import serial_api, SerialDataReceiver
 from utils.other import load_script
-from utils.widgets import MessageWindow
+from utils.widgets import MessageWindow, GraphCanvas
+
+from matplotlib.lines import Line2D
 
 
 __all__ = (
@@ -18,6 +20,7 @@ __all__ = (
 )
 
 
+# noinspection PyUnresolvedReferences
 class AnalyzeWindow(SerialDataReceiver, QW.QMainWindow):
     __instance = None
 
@@ -38,6 +41,7 @@ class AnalyzeWindow(SerialDataReceiver, QW.QMainWindow):
     label_file_learn: QW.QLabel
     label_file_test: QW.QLabel
     label_file_algorythm: QW.QLabel
+    b_check_models: QW.QPushButton
 
     log_view: QW.QTextEdit
     rb_del_columns: QW.QRadioButton
@@ -57,6 +61,7 @@ class AnalyzeWindow(SerialDataReceiver, QW.QMainWindow):
         self.b_start_test_file.clicked.connect(self.testWithFile)
         self.b_save.clicked.connect(self.saveLog)
         self.b_analyze_port.clicked.connect(self.analyzeSwitch)
+        self.b_check_models.clicked.connect(self.open_view_models)
 
         self.b_size_down.clicked.connect(self.sizeDown)
         self.b_size_up.clicked.connect(self.sizeUp)
@@ -75,6 +80,19 @@ class AnalyzeWindow(SerialDataReceiver, QW.QMainWindow):
         self.main_widget.setLayout(self.layout_main)
         self.layout_main.setParent(self.main_widget)
         self.setCentralWidget(self.main_widget)
+
+        self.models_view_window = None
+
+    def open_view_models(self):
+        if self.lib:
+            if not hasattr(self.lib, 'getModelsData'):
+                MessageWindow(self, 'Алгоритм не поддерживает просмотр моделей')
+                return
+            self.models_view_window = ViewModels.show_window(
+                self, self.lib.getModelsData(), self.lib.NAME
+            )
+        else:
+            MessageWindow(self, 'Сначала обучите алгоритм')
 
     @staticmethod
     def load_file(widget: QW.QLabel):
@@ -250,6 +268,64 @@ class GasSelectionWindow(QW.QMainWindow):
         super().__init__(parent)
         self.gases = {}
         with open(file_path, mode='r', encoding='utf-8') as file:
-            line = file.readline()
-            # while line !=
-            # if not
+            pass
+
+
+class ViewModels(QW.QMainWindow):
+    __instance: "ViewModels" = None
+
+    layout_main: QW.QVBoxLayout
+
+    LINE_WIDTH = 2
+
+    def __init__(self, parent, models: tuple, algo_name: str):
+        super().__init__(parent)
+        uic.loadUi(Path.to_template("models_view.ui"), self)
+        self.setWindowTitle(f"{algo_name}: Просмотр Моделей")
+        self.setWindowIcon(QIcon(Path.to_images('icon.ico')))
+
+        self.main_widget = QW.QWidget(self)
+        self.main_widget.setLayout(self.layout_main)
+        self.layout_main.setParent(self.main_widget)
+        self.setCentralWidget(self.main_widget)
+
+        self.sc = GraphCanvas(width=5, height=4, dpi=100)
+        self.plt = self.sc.axes
+        self.layout_main.addWidget(self.sc)
+
+        models_data, models_names = models
+        self.drawModels(models_data, models_names)
+
+    def drawModels(self, models_data, models_names):
+        self.plt.clear()
+
+        sen_amount = len(models_data[0])
+
+        width = 1 / (sen_amount + 1)
+        offset = 0
+        for i, name in enumerate(models_names):
+            self.plt.bar([j + offset for j in range(0, sen_amount)], models_data[i], width, label=name)
+            offset += width
+
+        mod_amount = len(models_names)
+        offset = -width / 2
+        for x in range(sen_amount):
+            self.plt.add_line(
+                Line2D(
+                    [x + offset, x + (width * mod_amount) + offset],
+                    [-ViewModels.LINE_WIDTH / 2, ] * 2,
+                    linewidth=ViewModels.LINE_WIDTH
+                )
+            )
+
+        self.plt.legend(loc="upper right")
+        self.sc.draw()
+
+    @classmethod
+    def show_window(cls, parent, models_data, algo_name: str) -> "ViewModels":
+        if cls.__instance:
+            cls.__instance.close()
+
+        cls.__instance = cls(parent, models_data, algo_name)
+        cls.__instance.show()
+        return cls.__instance
