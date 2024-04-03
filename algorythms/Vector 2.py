@@ -4,19 +4,79 @@ air_means = []
 
 names = []
 sensors_data = []
+sensors_mask = []
 means_data = []
 
 
 DEF_TYPE = np.float32
-NAME = "Метод Расстояний"
+NAME = "Векторный Метод "
 FILTER_PERCENT = 0.06
-FILTER_AMOUNT = 10
-FILTER_FINAL_K = 0.05
+FILTER_AMOUNT = 0.03
+FILTER_FINAL_K = 0.0
 
-DEFAULT_RETURN = [[['Air', 1.0],  ], 'NO_INFO']
+DEFAULT_RETURN_NO_ACTIVE = [['Air', 1.0],  ]
+DEFAULT_RETURN_ACTIVE = [['Air+?', 1.0],  ]
 
 LIMIT_K = 1
 MAX_K_PER_ANALYZE = 1.0
+
+
+class Mask:
+    @staticmethod
+    def from_sensors(norm_means):
+        new_means_i = []
+
+        for i, mean in enumerate(norm_means):
+            if abs(mean) > FILTER_PERCENT:
+                new_means_i.append(1)  # i
+            else:  # delete
+                new_means_i.append(0)
+
+        return new_means_i
+
+    @staticmethod
+    def contains(_list: list, sub_list: list) -> bool:
+        for i in range(len(sub_list)):
+            if sub_list[i] == 1 and _list[i] == 0:
+                return False
+        return True
+
+    @staticmethod
+    def compare(m1: list, m2: list) -> int:
+        s = 0
+        for x in range(len(m1)):
+            if m1[x] != m2[x]:
+                s += 1
+        return s
+
+    @staticmethod
+    def apply(vec: np.ndarray, mask: list) -> np.ndarray:
+        res_vec = vec.copy()
+        for x in range(len(mask)):
+            if mask[x] == 0:
+                res_vec[x] = 0
+        return res_vec
+
+    @staticmethod
+    def sub(m1: list, m2: list) -> list:
+        return [1 if m1[x] and not m2[x] else 0 for x in range(len(m1))]
+
+    @staticmethod
+    def combinations(full_mask: list, mask_list: list) -> list:
+        result = []
+        Mask.__combinations_rec(full_mask, mask_list, [], result)
+        return result
+
+    @staticmethod
+    def __combinations_rec(full_mask: list, mask_list: list, container: list, global_container: list):
+        is_end = True
+        for i, mask in enumerate(mask_list):
+            if Mask.contains(full_mask, mask):
+                new_mask = Mask.sub(full_mask, mask)
+                Mask.__combinations_rec(new_mask, mask_list, container + [i, ], global_container)
+                is_end = False
+        if is_end:
+            return global_container.append( [container, not any(full_mask) ] )
 
 
 def distance(a: np.ndarray, b: np.ndarray, r: float = 0.5,
@@ -55,45 +115,11 @@ def normalize_active(vec: np.ndarray, mask: list) -> np.ndarray:
     return new_vec / lenn
 
 
-def get_active_sensors(norm_means):
-    new_means_i = []
-
-    for i, mean in enumerate(norm_means):
-        if abs(mean) > FILTER_PERCENT:
-            new_means_i.append(1)  # i
-        else:  # delete
-            new_means_i.append(0)
-
-    return new_means_i
-
-
-def contains(_list: list, sub_list: list) -> bool:
-    for i in range( len(sub_list) ):
-        if sub_list[i] == 1 and _list[i] == 0:
-            return False
-    return True
-
-
-def mask_compare(m1: list, m2: list) -> int:
-    s = 0
-    for x in range(len(m1)):
-        if m1[x] != m2[x]:
-            s += 1
-    return s
-
-
-def apply_mask(vec: np.ndarray, mask: list) -> np.ndarray:
-    res_vec = vec.copy()
-    for x in range(len(mask)):
-        if mask[x] == 0:
-            res_vec[x] = 0
-    return res_vec
-
-
 def load(file_name, header_rows, skip_columns=None, raw_data=None, use_gases=None):
     global means_data
     global air_means
     global sensors_data
+    global sensors_mask
 
     means_data = []
     names.clear()
@@ -140,20 +166,22 @@ def load(file_name, header_rows, skip_columns=None, raw_data=None, use_gases=Non
         means_data[x] = means - air_means
         norm = normalize(means_data[x])
         for i, mean in enumerate(list(means_data[x])):
-            if abs(mean) <= FILTER_AMOUNT:
+            if abs(mean) <= air_means[i] * FILTER_AMOUNT:
                 norm[i] = DEF_TYPE(0)
         normalized_means.append(norm)
 
     # CREATE GAS MODELS WITH ACTIVE SENSORS AND THEIR FEEDBACKS
     sensors_data = []
+    sensors_mask = []
     for x, norm_means in enumerate(normalized_means):
-        new_means_i = get_active_sensors(norm_means)
+        new_means_i = Mask.from_sensors(norm_means)
 
         sensors_data.append([
                 new_means_i,
                 np.array(means_data[x], dtype=DEF_TYPE),
-                apply_mask(means_data[x], new_means_i)
+                Mask.apply(means_data[x], new_means_i)
             ])
+        sensors_mask.append(new_means_i)
 
     printData()
 
@@ -164,26 +192,25 @@ def analyze(test_features):
     test_features -= air_means
     # ACTIVE SENSORS
     normalized = normalize(test_features)
-    test_sensors = get_active_sensors(normalized)
+    test_sensors = Mask.from_sensors(normalized)
 
-    test_feedback = np.array(test_features, dtype=DEF_TYPE)
     if all(x == 0 for x in test_sensors):
-        return DEFAULT_RETURN[:]
+        return DEFAULT_RETURN_NO_ACTIVE[:], 'NO_INFO'
 
-    # SORT MODELS
-    # distances = [ [x, distance(item[2], test_feedback)] for x, item in enumerate(sensors_data) ]
-    distances = [[x, mask_compare(test_sensors, item[0])] for x, item in enumerate(sensors_data)]
-    distances.sort(key=lambda x: x[1])
+    possible_variants = Mask.combinations(test_sensors, sensors_mask)
 
-    # ANALYZE
-    curr_lim_k = MAX_K_PER_ANALYZE
-    gases = []
-    for [i, _] in distances:
-        sensors, model_feedbacks, _ = sensors_data[i]
+    best_k = MAX_K_PER_ANALYZE
+    best_combination = []
 
-        if contains(test_sensors, sensors):  # нашли вхождение образа в показания
-            # соотношения показаний с показаниями в модели
-            sensor_ks = [test_feedback[i] / model_feedbacks[i] for i in range(len(test_feedback)) if sensors[i] != 0]
+    for variant, is_full in possible_variants:
+        if not is_full: continue
+        test_feedback = np.array(test_features, dtype=DEF_TYPE)
+        curr_lim_k = MAX_K_PER_ANALYZE
+        curr_combination = []
+
+        for model_i in variant:
+            sensors, model_feedbacks, _ = sensors_data[model_i]
+            sensor_ks = [abs(test_feedback[i] / model_feedbacks[i]) for i in range(len(test_feedback)) if sensors[i] != 0]
             if LIMIT_K: sensor_ks += [LIMIT_K, ]
             sensor_ks += [curr_lim_k, ]
             min_k = min(sensor_ks)
@@ -192,9 +219,16 @@ def analyze(test_features):
             if min_k > FILTER_FINAL_K:
                 # вычитаем показания сенсоров, которые включены в текущую модель
                 test_feedback -= [model_feedbacks[x] * min_k if sensors[x] else 0 for x in range(len(test_feedback))]
-                gases.append( [names[i], min_k] )
+                curr_combination.append([names[model_i], min_k])
 
-    return [gases, test_sensors, distances] if gases else DEFAULT_RETURN[:]
+        variant.append(curr_lim_k)
+        if curr_lim_k < best_k:
+            best_k = curr_lim_k
+            best_combination = curr_combination.copy()
+
+    if best_combination:
+        return best_combination, str(test_sensors)
+    return DEFAULT_RETURN_ACTIVE[:], str(test_sensors)
 
 
 def getModelsData():
@@ -270,3 +304,15 @@ if __name__ == '__main__':
     test_res = ['Gas_0+2', 'Gas_4+2']
     res = analyze(test)
     print(res, '\t\t\t\t\t', test_res if res != test_res else "GOOD")
+
+    # masks = [
+    #     [0, 1, 0, 0, 0],
+    #     [0, 0, 1, 1, 0],
+    #     [0, 0, 0, 1, 0]
+    # ]
+    #
+    # _mask = [
+    #     0, 1, 1, 1, 0
+    # ]
+    #
+    # print(Mask.combinations(_mask, masks))

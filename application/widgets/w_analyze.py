@@ -46,6 +46,8 @@ class AnalyzeWindow(SerialDataReceiver, QW.QMainWindow):
     log_view: QW.QTextEdit
     rb_del_columns: QW.QRadioButton
 
+    rb_hide_good: QW.QRadioButton
+
     def __init__(self, parent: QW.QMainWindow):
         super().__init__(parent)
         uic.loadUi(Path.to_template("testing.ui"), self)
@@ -181,8 +183,8 @@ class AnalyzeWindow(SerialDataReceiver, QW.QMainWindow):
             for i, line in enumerate(data):
                 res, *debug_return = self.lib.analyze(line.strip().split(DATA_DIVIDER)[SKIP_COLUMNS:])
                 true = line.split("\t")[1]
-                if (res[0][0] in true) or (true in res[0][0]):
-                    if len(res) == 1:
+                if (res[0][0] in true) or (true in res[0][0]) or (true.split('_')[0] == res[0][0].split('_')[0]):
+                    if len(res) == len(true.split(',')):
                         counter_good += 1
                         p = "TRUE"
                     else:
@@ -191,6 +193,7 @@ class AnalyzeWindow(SerialDataReceiver, QW.QMainWindow):
                 else:
                     p = 'FALSE'
                 counter += 1
+                if p == 'TRUE' and self.rb_hide_good.isChecked(): continue
 
                 line = f"{i}\tрез: {res}\tист: {true}\t{p}\t" + (str(debug_return) if DO_DEBUG_RETURN else '')
                 match p:
